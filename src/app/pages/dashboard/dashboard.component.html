@@ -1,0 +1,198 @@
+<div class="dashboard-wrapper">
+  <div class="dashboard-container">
+    <!-- Header con título y notificaciones -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <h1>Panel de Administración</h1>
+        <p>Bienvenido, Administrador</p>
+      </div>
+      <div class="header-actions">
+        <div class="notification-bell">
+          <span class="bell-icon">🔔</span>
+          <span class="notification-badge" *ngIf="notificacionesNoLeidas > 0">
+            {{ notificacionesNoLeidas }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjetas de estadísticas principales -->
+    <div class="stats-grid">
+      <div class="stat-card stat-primary">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>Fisios Suscritos</h3>
+          <p class="stat-number">{{ fisiosSuscritos }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-warning">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <h3>Por Validar</h3>
+          <p class="stat-number">{{ fisiosValidar }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-success">
+        <div class="stat-icon">➕</div>
+        <div class="stat-content">
+          <h3>Suscripciones Nuevas</h3>
+          <p class="stat-number">{{ suscripcionesNuevas }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-danger">
+        <div class="stat-icon">💳</div>
+        <div class="stat-content">
+          <h3>Pagos Pendientes</h3>
+          <p class="stat-number">{{ pagosPendientes }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-danger">
+        <div class="stat-icon">❌</div>
+        <div class="stat-content">
+          <h3>Anulados por Pagos</h3>
+          <p class="stat-number">{{ anuladosPorPagos }}</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-info">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-content">
+          <h3>Rechazados</h3>
+          <p class="stat-number">{{ fisiosRechazados }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficas y Paneles -->
+    <div class="dashboard-content">
+      <div class="content-row">
+        <!-- Gráfica de Fisios Suscritos -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h2>Fisios Suscritos este Mes</h2>
+          </div>
+          <div class="chart-placeholder">
+            <div class="chart-bars">
+              <div class="chart-bar" style="height: 70%;">
+                <span class="bar-label">Sem 1: 45</span>
+              </div>
+              <div class="chart-bar" style="height: 85%;">
+                <span class="bar-label">Sem 2: 62</span>
+              </div>
+              <div class="chart-bar" style="height: 60%;">
+                <span class="bar-label">Sem 3: 38</span>
+              </div>
+              <div class="chart-bar" style="height: 90%;">
+                <span class="bar-label">Sem 4: 100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de Fisios a Validar -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>Fisios Pendientes<span class="badge">{{ fisiosValidar }}</span></h2>
+          </div>
+          <div class="panel-list">
+            <div *ngFor="let fisio of panelesFisiosValidar" class="list-item">
+              <div class="item-info">
+                <h4>{{ fisio.nombre }}</h4>
+                <p>{{ fisio.especialidad }}</p>
+                <span class="date">Solicitud: {{ fisio.fecha }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small btn-success">Validar</button>
+                <button class="btn-small btn-danger">Rechazar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-row">
+        <!-- Panel de Suscripciones Nuevas -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>Suscripciones Nuevas<span class="badge">{{ suscripcionesNuevas }}</span></h2>
+          </div>
+          <div class="panel-list">
+            <div *ngFor="let sub of panelesSuscripciones" class="list-item">
+              <div class="item-info">
+                <h4>{{ sub.nombre }}</h4>
+                <p>Plan: {{ sub.plan }}</p>
+                <span class="date">{{ sub.fecha }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small btn-info">Ver Detalles</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de Pagos Pendientes -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>Pagos Pendientes<span class="badge">{{ pagosPendientes }}</span></h2>
+          </div>
+          <div class="panel-list">
+            <div *ngFor="let pago of panelesPagosPendientes" class="list-item">
+              <div class="item-info">
+                <h4>{{ pago.nombre }}</h4>
+                <p class="amount">{{ pago.monto }}</p>
+                <span class="date">Vencimiento: {{ pago.vencimiento }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small btn-warning">Cobrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-row">
+        <!-- Panel de Fisios Anulados por Pagos -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>Fisios Anulados<span class="badge">{{ anuladosPorPagos }}</span></h2>
+          </div>
+          <div class="panel-list">
+            <div *ngFor="let anulado of panelesFisiosAnulados" class="list-item">
+              <div class="item-info">
+                <h4>{{ anulado.nombre }}</h4>
+                <p>{{ anulado.motivo }}</p>
+                <span class="date">{{ anulado.fecha }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small btn-secondary">Reactivar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de Fisios Rechazados -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>Fisios Rechazados<span class="badge">{{ fisiosRechazados }}</span></h2>
+          </div>
+          <div class="panel-list">
+            <div *ngFor="let rechazado of panelesFisiosRechazados" class="list-item">
+              <div class="item-info">
+                <h4>{{ rechazado.nombre }}</h4>
+                <p>{{ rechazado.motivo }}</p>
+                <span class="date">{{ rechazado.fecha }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small btn-secondary">Revisión</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
