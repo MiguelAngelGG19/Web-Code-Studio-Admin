@@ -1,0 +1,379 @@
+<div class="ejercicios-container">
+  <!-- Header -->
+  <div class="ejercicios-header">
+    <div>
+      <h1>Repositorio de Ejercicios</h1>
+      <p>Catálogo de ejercicios disponibles para los pacientes - Gestiónado por fisioterapeutas</p>
+    </div>
+    <button class="btn btn-primary btn-upload" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
+      <mat-icon>upload_file</mat-icon>
+      <span>Subir Ejercicio</span>
+    </button>
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="content-wrapper">
+    <!-- Panel de Filtros -->
+    <div class="filtros-panel" [class.form-open]="showFormulario()">
+      <div class="filtros-header">
+        <h3>Filtros</h3>
+        <button class="btn-limpiar" (click)="limpiarFiltros()" *ngIf="filtroZonas().length > 0 || filtroEquipo().length > 0 || filtroTipo() || filtroDificultad()">
+          <mat-icon>clear_all</mat-icon>
+          Limpiar
+        </button>
+      </div>
+
+      <!-- Buscador -->
+      <div class="filtro-group">
+        <label>Buscar</label>
+        <div class="search-container">
+          <mat-icon>search</mat-icon>
+          <input
+            type="text"
+            [(ngModel)]="busqueda"
+            placeholder="Buscar por nombre, descripción..."
+            class="search-input"
+          />
+        </div>
+      </div>
+
+      <!-- Filtro por Zona del Cuerpo -->
+      <div class="filtro-group">
+        <label>Zona del Cuerpo</label>
+        <div class="checkbox-list">
+          <div *ngFor="let zona of zonasDisponibles" class="checkbox-item">
+            <input
+              type="checkbox"
+              [id]="'zona-' + zona"
+              [checked]="filtroZonas().includes(zona)"
+              (change)="toggleZona(zona)"
+              class="checkbox-input"
+            />
+            <label [for]="'zona-' + zona" class="checkbox-label">{{ zona }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro por Tipo -->
+      <div class="filtro-group">
+        <label for="filtro-tipo">Tipo de Ejercicio</label>
+        <select
+          id="filtro-tipo"
+          [(ngModel)]="filtroTipo"
+          class="filtro-select"
+        >
+          <option value="">-- Todos --</option>
+          <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">{{ tipo }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro por Equipo -->
+      <div class="filtro-group">
+        <label>Equipo Necesario</label>
+        <div class="checkbox-list">
+          <div *ngFor="let equipo of equiposDisponibles" class="checkbox-item">
+            <input
+              type="checkbox"
+              [id]="'equipo-' + equipo"
+              [checked]="filtroEquipo().includes(equipo)"
+              (change)="toggleEquipo(equipo)"
+              class="checkbox-input"
+            />
+            <label [for]="'equipo-' + equipo" class="checkbox-label">{{ equipo }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro por Dificultad -->
+      <div class="filtro-group">
+        <label for="filtro-dificultad">Dificultad</label>
+        <select
+          id="filtro-dificultad"
+          [(ngModel)]="filtroDificultad"
+          class="filtro-select"
+        >
+          <option value="">-- Todos --</option>
+          <option *ngFor="let dif of dificultadesDisponibles" [value]="dif">{{ dif }}</option>
+        </select>
+      </div>
+
+      <!-- Toggle de Activos -->
+      <div class="filtro-group">
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="mostrarSoloActivos"
+            class="checkbox-input"
+          />
+          <span>Mostrar solo activos</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Área de Ejercicios -->
+    <div class="ejercicios-area" [class.form-open]="showFormulario()">
+      <!-- Contador de resultados -->
+      <div class="resultados-contador">
+        <p>Se encontraron <strong>{{ ejerciciosFiltrados.length }}</strong> ejercicio(s)</p>
+      </div>
+
+      <!-- Grid de Ejercicios -->
+      <div class="ejercicios-grid" *ngIf="!showFormulario()">
+        <div *ngFor="let ejercicio of ejerciciosFiltrados" class="ejercicio-card">
+          <div class="card-image">
+            <div class="image-placeholder" *ngIf="!ejercicio.imagenUrl">
+              <mat-icon>fitness_center</mat-icon>
+            </div>
+            <img *ngIf="ejercicio.imagenUrl" [src]="ejercicio.imagenUrl" [alt]="ejercicio.nombre" />
+          </div>
+
+          <div class="card-content">
+            <h3>{{ ejercicio.nombre }}</h3>
+            <p class="descripcion">{{ ejercicio.descripcion }}</p>
+
+            <div class="info-tags">
+              <span class="tag tag-tipo">{{ ejercicio.tipo }}</span>
+              <span class="tag tag-dificultad" [class.dif-basico]="ejercicio.dificultad === 'Básico'"
+                [class.dif-intermedio]="ejercicio.dificultad === 'Intermedio'"
+                [class.dif-avanzado]="ejercicio.dificultad === 'Avanzado'">
+                {{ ejercicio.dificultad }}
+              </span>
+            </div>
+
+            <div class="info-detalles">
+              <div class="detalle">
+                <mat-icon>location_on</mat-icon>
+                <span>{{ ejercicio.zonasCuerpo.join(', ') }}</span>
+              </div>
+              <div class="detalle">
+                <mat-icon>timer</mat-icon>
+                <span>{{ ejercicio.duracion }}s</span>
+              </div>
+            </div>
+
+            <div class="info-equipo" *ngIf="ejercicio.equipoNecesario.length > 0">
+              <mat-icon>build</mat-icon>
+              <span>{{ ejercicio.equipoNecesario.join(', ') }}</span>
+            </div>
+
+            <div class="etiquetas" *ngIf="ejercicio.etiquetas.length > 0">
+              <span *ngFor="let etiqueta of ejercicio.etiquetas" class="etiqueta">
+                #{{ etiqueta }}
+              </span>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn btn-icon" (click)="editarEjercicio(ejercicio.id)" title="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="btn btn-icon btn-toggle"
+                (click)="toggleOcultar(ejercicio.id)"
+                [title]="ejercicio.activo ? 'Ocultar' : 'Mostrar'">
+                <mat-icon>{{ ejercicio.activo ? 'visibility' : 'visibility_off' }}</mat-icon>
+              </button>
+              <button class="btn btn-icon btn-delete" (click)="eliminarEjercicio(ejercicio.id)" title="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje vacío -->
+      <div class="empty-state" *ngIf="ejerciciosFiltrados.length === 0 && !showFormulario()">
+        <mat-icon>search_off</mat-icon>
+        <p>No se encontraron ejercicios con los filtros seleccionados.</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="formulario-section" *ngIf="showFormulario()">
+      <div class="formulario-card">
+        <h2>{{ nuevoEditando() ? 'Subir Nuevo Ejercicio' : 'Editar Ejercicio' }}</h2>
+
+        <form (ngSubmit)="guardarEjercicio()" class="form">
+          <div class="form-column">
+            <!-- Información Básica -->
+            <div class="form-section">
+              <h4>Información Básica</h4>
+
+              <div class="form-group">
+                <label for="nombre">Nombre del Ejercicio *</label>
+                <input
+                  id="nombre"
+                  type="text"
+                  [(ngModel)]="formulario().nombre"
+                  name="nombre"
+                  class="form-input"
+                  placeholder="Ej: Estiramiento de Espalda"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="descripcion">Descripción *</label>
+                <textarea
+                  id="descripcion"
+                  [(ngModel)]="formulario().descripcion"
+                  name="descripcion"
+                  class="form-textarea"
+                  placeholder="Describe el ejercicio y sus beneficios"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tipo">Tipo de Ejercicio *</label>
+                  <select
+                    id="tipo"
+                    [(ngModel)]="formulario().tipo"
+                    name="tipo"
+                    class="form-select"
+                    required
+                  >
+                    <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">{{ tipo }}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="dificultad">Dificultad *</label>
+                  <select
+                    id="dificultad"
+                    [(ngModel)]="formulario().dificultad"
+                    name="dificultad"
+                    class="form-select"
+                    required
+                  >
+                    <option *ngFor="let dif of dificultadesDisponibles" [value]="dif">{{ dif }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="duracion">Duración (segundos) *</label>
+                  <input
+                    id="duracion"
+                    type="number"
+                    [(ngModel)]="formulario().duracion"
+                    name="duracion"
+                    class="form-input"
+                    min="1"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- URLs -->
+            <div class="form-section">
+              <h4>Multimedia</h4>
+
+              <div class="form-group">
+                <label for="videoUrl">URL del Video</label>
+                <input
+                  id="videoUrl"
+                  type="url"
+                  [(ngModel)]="formulario().videoUrl"
+                  name="videoUrl"
+                  class="form-input"
+                  placeholder="https://ejemplo.com/video.mp4"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="imagenUrl">URL de la Imagen</label>
+                <input
+                  id="imagenUrl"
+                  type="url"
+                  [(ngModel)]="formulario().imagenUrl"
+                  name="imagenUrl"
+                  class="form-input"
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+              </div>
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="form-section">
+              <h4>Instrucciones</h4>
+
+              <div class="form-group">
+                <label for="instrucciones">Instrucciones Técnicas</label>
+                <textarea
+                  id="instrucciones"
+                  [(ngModel)]="formulario().instrucciones"
+                  name="instrucciones"
+                  class="form-textarea"
+                  placeholder="1. Paso 1&#10;2. Paso 2&#10;3. Paso 3"
+                  rows="4"
+                ></textarea>
+                <small class="form-hint">Enumera los pasos del ejercicio</small>
+              </div>
+
+              <div class="form-group">
+                <label for="etiquetas">Etiquetas (separadas por coma)</label>
+                <input
+                  id="etiquetas"
+                  type="text"
+                  [(ngModel)]="formulario().etiquetas"
+                  name="etiquetas"
+                  class="form-input"
+                  placeholder="Ej: principiante, relajación, espalda"
+                />
+                <small class="form-hint">Ayuda a categorizar el ejercicio</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Segunda columna - Selecciones -->
+          <div class="form-column">
+            <!-- Zonas del Cuerpo -->
+            <div class="form-section">
+              <h4>Zonas del Cuerpo</h4>
+              <div class="checkbox-grid">
+                <label *ngFor="let zona of zonasDisponibles" class="checkbox-item">
+                  <input
+                    type="checkbox"
+                    [checked]="formulario().zonasCuerpo.includes(zona)"
+                    (change)="toggleZonaCuerpo(zona)"
+                    class="checkbox-input"
+                  />
+                  <span class="checkbox-label">{{ zona }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Equipo Necesario -->
+            <div class="form-section">
+              <h4>Equipo Necesario</h4>
+              <div class="checkbox-grid">
+                <label *ngFor="let equipo of equiposDisponibles" class="checkbox-item">
+                  <input
+                    type="checkbox"
+                    [checked]="formulario().equipoNecesario.includes(equipo)"
+                    (change)="toggleEquipoNecesario(equipo)"
+                    class="checkbox-input"
+                  />
+                  <span class="checkbox-label">{{ equipo }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="form-buttons">
+          <button type="button" class="btn btn-cancel" (click)="cancelarFormulario()">
+            <mat-icon>close</mat-icon>
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-success" (click)="guardarEjercicio()">
+            <mat-icon>save</mat-icon>
+            Guardar Ejercicio
+          </button>
+        </div>
+      </div>
+    </div>
+</div>

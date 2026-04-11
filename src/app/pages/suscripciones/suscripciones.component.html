@@ -1,0 +1,149 @@
+<div class="suscripciones-container">
+  <!-- Header -->
+  <div class="suscripciones-header">
+    <div>
+      <h1>Suscripciones - Configuración de Planes</h1>
+      <p>Administra los planes de suscripción disponibles para los fisioterapeutas</p>
+    </div>
+    <button class="btn btn-primary btn-new" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
+      <mat-icon>add_circle_outline</mat-icon>
+      <span>Nuevo Plan</span>
+    </button>
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="content-wrapper">
+    <!-- Tabla de Planes -->
+    <div class="planes-section" [class.form-open]="showFormulario()">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre del Plan</th>
+              <th>Precio</th>
+              <th>Duración</th>
+              <th>Tipo de Facturación</th>
+              <th>Estatus</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let plan of planes()">
+              <td class="nombre-plan">{{ plan.nombre }}</td>
+              <td class="precio">${{ plan.precio.toFixed(2) }}</td>
+              <td class="duracion">{{ plan.duracion }} días</td>
+              <td class="tipo">{{ plan.tipoFacturacion }}</td>
+              <td>
+                <span [class]="'badge ' + obtenerColorEstatus(plan.activo)">
+                  {{ obtenerEstatusTexto(plan.activo) }}
+                </span>
+              </td>
+              <td class="acciones">
+                <button class="btn btn-icon" (click)="editarPlan(plan.id)" title="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="btn btn-icon btn-toggle" (click)="toggleActivoPlan(plan.id)" 
+                  [title]="plan.activo ? 'Desactivar' : 'Activar'">
+                  <mat-icon>{{ plan.activo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                </button>
+                <button class="btn btn-icon btn-delete" (click)="eliminarPlan(plan.id)" title="Eliminar">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="formulario-section" *ngIf="showFormulario()">
+      <div class="formulario-card">
+        <h2>{{ nuevoEditando() ? 'Crear Nuevo Plan' : 'Editar Plan' }}</h2>
+
+        <form (ngSubmit)="guardarPlan()" class="form">
+          <div class="form-group">
+            <label for="nombre">Nombre del Plan *</label>
+            <input
+              id="nombre"
+              type="text"
+              [(ngModel)]="formulario().nombre"
+              name="nombre"
+              class="form-input"
+              placeholder="Ej: Premium"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="precio">Precio ($) *</label>
+              <input
+                id="precio"
+                type="number"
+                [(ngModel)]="formulario().precio"
+                name="precio"
+                class="form-input"
+                placeholder="Ej: 29.99"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="duracion">Duración (días) *</label>
+              <input
+                id="duracion"
+                type="number"
+                [(ngModel)]="formulario().duracion"
+                name="duracion"
+                class="form-input"
+                placeholder="Ej: 30"
+                min="1"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tipoFacturacion">Tipo de Facturación *</label>
+            <select
+              id="tipoFacturacion"
+              [(ngModel)]="formulario().tipoFacturacion"
+              name="tipoFacturacion"
+              class="form-select"
+            >
+              <option value="Mensual">Mensual</option>
+              <option value="Anual">Anual</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="beneficios">Beneficios (separados por coma)</label>
+            <textarea
+              id="beneficios"
+              [(ngModel)]="formulario().beneficios"
+              name="beneficios"
+              class="form-textarea"
+              placeholder="Ej: Acceso a todos los ejercicios, Soporte 24/7, Reportes avanzados"
+              rows="4"
+            ></textarea>
+            <small class="form-hint">Cada beneficio separado por coma (,)</small>
+          </div>
+
+          <div class="form-buttons">
+            <button type="button" class="btn btn-cancel" (click)="cancelarFormulario()">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success">
+              <mat-icon>save</mat-icon>
+              Guardar Plan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

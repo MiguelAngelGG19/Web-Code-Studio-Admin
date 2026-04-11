@@ -1,68 +1,49 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatIconModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  loginForm: FormGroup;
-  loading = false;
-  submitted = false;
+  email = '';
+  password = '';
   showPassword = false;
+  rememberMe = false;
 
   constructor(
-    private formBuilder: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
-    this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
-    });
-  }
-
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit() {
-    this.submitted = true;
-
-    if (this.loginForm.invalid) {
+  login() {
+    if (!this.email || !this.password) {
+      console.log('Por favor completa todos los campos');
       return;
     }
-
-    this.loading = true;
-    const { email, password } = this.loginForm.value;
-
-    this.authService.login(email, password).subscribe({
+    
+    // Llamar al servicio de autenticación
+    this.authService.login(this.email, this.password).subscribe({
       next: (success) => {
         if (success) {
-          this.loading = false;
-          // Navegar al dashboard después de iniciar sesión
-          this.router.navigate(['/dashboard']);
+          // Redirigir a home después del login exitoso
+          this.router.navigate(['/home']);
         }
       },
-      error: () => {
-        this.loading = false;
-        alert('Error al iniciar sesión');
-      },
+      error: (err) => {
+        console.log('Error en login:', err);
+      }
     });
   }
 }

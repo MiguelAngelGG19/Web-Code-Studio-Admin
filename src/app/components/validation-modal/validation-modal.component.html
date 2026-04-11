@@ -1,0 +1,82 @@
+<div class="validation-modal">
+  <div class="modal-header">
+    <h2>Validar Solicitud de {{ data.nombre }}</h2>
+    <button (click)="dialogRef.close()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="modal-content">
+    <!-- Información del solicitante -->
+    <div class="solicitante-info">
+      <div class="info-row">
+        <span class="label">Nombre:</span>
+        <span class="value">{{ data.nombre }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Email:</span>
+        <span class="value">{{ data.email }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Título:</span>
+        <span class="value">{{ data.titulo }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Fecha de Solicitud:</span>
+        <span class="value">{{ data.fechaSolicitud }}</span>
+      </div>
+    </div>
+
+    <!-- Documentos -->
+    <div class="documentos-section">
+      <h3>Documentos Enviados</h3>
+      <div class="documentos-grid">
+        <div *ngFor="let doc of documentos; let i = index" class="documento-item">
+          <div class="documento-card">
+            <mat-icon class="doc-icon">description</mat-icon>
+            <p class="doc-nombre">{{ doc.nombre }}</p>
+            <button class="btn-ver" (click)="verDocumento(i)">
+              <mat-icon>visibility</mat-icon>
+              Ver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <!-- Botones de acción (por defecto) -->
+    <div *ngIf="!showRejectForm()" class="action-buttons">
+      <button class="btn btn-reject" (click)="abrirFormRechazo()">
+        <mat-icon>close</mat-icon>
+        Rechazar
+      </button>
+      <button class="btn btn-approve" (click)="aprobar()">
+        <mat-icon>done</mat-icon>
+        Aprobar
+      </button>
+    </div>
+
+    <!-- Formulario de rechazo -->
+    <div *ngIf="showRejectForm()" class="reject-form">
+      <label for="comentario">¿Por qué rechazas esta solicitud?</label>
+      <textarea
+        id="comentario"
+        [(ngModel)]="comentario"
+        placeholder="Escribe el motivo del rechazo..."
+        class="comentario-input"
+      ></textarea>
+      <div class="form-buttons">
+        <button class="btn btn-cancel" (click)="cancelarRechazo()">
+          <mat-icon>arrow_back</mat-icon>
+          Cancelar
+        </button>
+        <button class="btn btn-confirm-reject" (click)="confirmarRechazo()">
+          <mat-icon>check</mat-icon>
+          Confirmar Rechazo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

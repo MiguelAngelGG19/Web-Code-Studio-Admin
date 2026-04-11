@@ -1,0 +1,170 @@
+<div class="gestion-container">
+  <!-- Header -->
+  <div class="gestion-header">
+    <h1>Gestión de Fisioterapeutas</h1>
+    <p>Administra el flujo de usuarios profesionales</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'validar'"
+      (click)="selectTab('validar')">
+      <mat-icon>pending_actions</mat-icon>
+      <span>Por Validar ({{ porValidar.length }})</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'suscritos'"
+      (click)="selectTab('suscritos')">
+      <mat-icon>check_circle</mat-icon>
+      <span>Suscritos ({{ suscritos.length }})</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'rezagados'"
+      (click)="selectTab('rezagados')">
+      <mat-icon>warning</mat-icon>
+      <span>Rezagados ({{ rezagados.length }})</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'rechazados'"
+      (click)="selectTab('rechazados')">
+      <mat-icon>block</mat-icon>
+      <span>Rechazados ({{ rechazados.length }})</span>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="content-area">
+    <!-- Por Validar -->
+    <div class="tab-content" *ngIf="activeTab() === 'validar'">
+      <h2>Profesionales Por Validar</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Título Profesional</th>
+              <th>Fecha Solicitud</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of porValidar">
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.titulo }}</td>
+              <td>{{ item.fechaSolicitud }}</td>
+              <td class="actions">
+                <button class="btn btn-view" (click)="verPerfil(item.id)">
+                  <mat-icon>visibility</mat-icon>
+                  Ver
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Suscritos -->
+    <div class="tab-content" *ngIf="activeTab() === 'suscritos'">
+      <h2>Fisioterapeutas Suscritos (Activos)</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Plan</th>
+              <th>Vencimiento</th>
+              <th>Pagos Realizados</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of suscritos">
+              <td>{{ item.nombre }}</td>
+              <td><span class="badge badge-success">{{ item.plan }}</span></td>
+              <td>{{ item.vencimiento }}</td>
+              <td>{{ item.pagos }}</td>
+              <td class="actions">
+                <button class="btn btn-small" (click)="enviarNotificacion(item.id)">
+                  <mat-icon>notifications</mat-icon>
+                </button>
+                <button class="btn btn-small" (click)="verHistorialPagos(item.id)">
+                  <mat-icon>receipt</mat-icon>
+                </button>
+                <button class="btn btn-small btn-danger" (click)="suspenderCuenta(item.id)">
+                  <mat-icon>pause_circle</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rezagados -->
+    <div class="tab-content" *ngIf="activeTab() === 'rezagados'">
+      <h2>Fisioterapeutas Rezagados (No Renovaron)</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Plan Vencido</th>
+              <th>Días de Rezago</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of rezagados">
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.planVencido }}</td>
+              <td><span class="badge badge-warning">{{ item.diasRezago }}d</span></td>
+              <td class="actions">
+                <button class="btn btn-success" (click)="reenganchar(item.id)">
+                  <mat-icon>autorenew</mat-icon>
+                  Re-enganchar
+                </button>
+                <button class="btn btn-danger" (click)="eliminarPermanentemente(item.id)">
+                  <mat-icon>delete</mat-icon>
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rechazados -->
+    <div class="tab-content" *ngIf="activeTab() === 'rechazados'">
+      <h2>Profesionales Rechazados (Historial)</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Motivo del Rechazo</th>
+              <th>Fecha Rechazo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of rechazados">
+              <td>{{ item.nombre }}</td>
+              <td>{{ item.email }}</td>
+              <td><span class="badge badge-danger">{{ item.motivo }}</span></td>
+              <td>{{ item.fechaRechazo }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
