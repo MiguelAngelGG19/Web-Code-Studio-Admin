@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,36 +14,47 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor() {
-    // Verificar si hay sesión guardada en localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
+  constructor(private http: HttpClient) {
+    const savedUser = localStorage.getItem('admin_user');
+    const token = localStorage.getItem('admin_token');
+    if (savedUser && token) {
       this.isLoggedInSubject.next(true);
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
   login(email: string, password: string): Observable<boolean> {
-    return new Observable((observer) => {
-      // Simulación de login
-      setTimeout(() => {
-        const user = {
-          id: 1,
-          email: email,
-          role: 'admin',
-          name: 'Administrador',
-        };
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.isLoggedInSubject.next(true);
-        this.currentUserSubject.next(user);
-        observer.next(true);
-        observer.complete();
-      }, 500);
-    });
+    return this.http
+      .post<{ token: string; user?: any }>(
+        `${environment.apiUrl}/auth/login`,
+        { email, password }
+      )
+      .pipe(
+        map((res) => {
+          // El back devuelve { token, ... } — guardamos el token
+          localStorage.setItem('admin_token', res.token);
+          // Construimos el objeto de usuario para la sesión local
+          const user = res.user ?? { email, role: 'admin' };
+          localStorage.setItem('admin_user', JSON.stringify(user));
+          this.isLoggedInSubject.next(true);
+          this.currentUserSubject.next(user);
+          return true;
+        }),
+        catchError((err) => {
+          return throwError(
+            () =>
+              new Error(
+                err?.error?.message ??
+                  'Credenciales incorrectas. Verifica tu email y contraseña.'
+              )
+          );
+        })
+      );
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
     this.isLoggedInSubject.next(false);
     this.currentUserSubject.next(null);
   }

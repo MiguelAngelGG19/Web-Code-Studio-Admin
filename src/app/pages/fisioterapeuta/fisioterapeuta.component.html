@@ -1,3 +1,32 @@
-<div class="fisioterapeuta-container">
-  <p>Aquí va lo de Javi</p>
+<div class="fisio-container">
+  <h2>Fisioterapeutas Pendientes de Validación</h2>
+
+  <div *ngIf="loading" class="loading">Cargando...</div>
+
+  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+
+  <div *ngIf="!loading && pendientes.length === 0 && !errorMsg" class="empty">
+    No hay fisioterapeutas pendientes de validación.
+  </div>
+
+  <div class="fisio-list" *ngIf="!loading && pendientes.length > 0">
+    <div class="fisio-card" *ngFor="let fisio of pendientes">
+      <div class="fisio-info">
+        <h3>{{ fisio.first_name }} {{ fisio.last_name_paternal }}</h3>
+        <p><strong>Email:</strong> {{ fisio.email }}</p>
+        <p><strong>Cédula:</strong> {{ fisio.license_number ?? 'No proporcionada' }}</p>
+        <p><strong>Estado:</strong> {{ fisio.status }}</p>
+        <div class="fisio-docs" *ngIf="fisio.ine_doc_url || fisio.license_doc_url">
+          <a *ngIf="fisio.ine_doc_url" [href]="fisio.ine_doc_url" target="_blank" class="doc-link">Ver INE</a>
+          <a *ngIf="fisio.license_doc_url" [href]="fisio.license_doc_url" target="_blank" class="doc-link">Ver Cédula</a>
+        </div>
+      </div>
+      <div class="fisio-actions">
+        <button class="btn-aprobar" (click)="aprobar(fisio.id_physio ?? fisio.id)">
+          ✅ Aprobar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

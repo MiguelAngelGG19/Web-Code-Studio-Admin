@@ -1,6 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -16,6 +22,7 @@ export class LoginComponent {
   loading = false;
   submitted = false;
   showPassword = false;
+  errorMessage = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -29,13 +36,8 @@ export class LoginComponent {
     });
   }
 
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
+  get email() { return this.loginForm.get('email'); }
+  get password() { return this.loginForm.get('password'); }
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -43,25 +45,21 @@ export class LoginComponent {
 
   onSubmit() {
     this.submitted = true;
+    this.errorMessage = '';
 
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email, password).subscribe({
-      next: (success) => {
-        if (success) {
-          this.loading = false;
-          // Navegar al dashboard después de iniciar sesión
-          this.router.navigate(['/dashboard']);
-        }
-      },
-      error: () => {
+      next: () => {
         this.loading = false;
-        alert('Error al iniciar sesión');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err: Error) => {
+        this.loading = false;
+        this.errorMessage = err.message;
       },
     });
   }
