@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, HttpClientModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -16,6 +17,7 @@ export class LoginComponent {
   loading = false;
   submitted = false;
   showPassword = false;
+  errorMessage = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -43,6 +45,7 @@ export class LoginComponent {
 
   onSubmit() {
     this.submitted = true;
+    this.errorMessage = '';
 
     if (this.loginForm.invalid) {
       return;
@@ -55,13 +58,12 @@ export class LoginComponent {
       next: (success) => {
         if (success) {
           this.loading = false;
-          // Navegar al dashboard después de iniciar sesión
           this.router.navigate(['/dashboard']);
         }
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        alert('Error al iniciar sesión');
+        this.errorMessage = err.message || 'Error al iniciar sesión. Verifica tus credenciales.';
       },
     });
   }
