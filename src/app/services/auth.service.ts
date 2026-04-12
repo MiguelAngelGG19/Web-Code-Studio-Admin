@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,38 +14,40 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor() {
-    // Verificar si hay sesión guardada en localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
+  constructor(private http: HttpClient) {
+    const savedUser = localStorage.getItem('adminUser');
+    const savedToken = localStorage.getItem('adminToken');
+    if (savedUser && savedToken) {
       this.isLoggedInSubject.next(true);
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
   login(email: string, password: string): Observable<boolean> {
-    return new Observable((observer) => {
-      // Simulación de login
-      setTimeout(() => {
-        const user = {
-          id: 1,
-          email: email,
-          role: 'admin',
-          name: 'Administrador',
-        };
-        localStorage.setItem('currentUser', JSON.stringify(user));
+    return this.http.post<any>(`${environment.apiUrl}/auth/login-admin`, { email, password }).pipe(
+      map((response) => {
+        localStorage.setItem('adminToken', response.token);
+        localStorage.setItem('adminUser', JSON.stringify(response.admin));
         this.isLoggedInSubject.next(true);
-        this.currentUserSubject.next(user);
-        observer.next(true);
-        observer.complete();
-      }, 500);
-    });
+        this.currentUserSubject.next(response.admin);
+        return true;
+      }),
+      catchError((error) => {
+        const msg = error?.error?.message || 'Credenciales incorrectas.';
+        return throwError(() => new Error(msg));
+      })
+    );
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
     this.isLoggedInSubject.next(false);
     this.currentUserSubject.next(null);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('adminToken');
   }
 
   isLoggedIn(): boolean {
