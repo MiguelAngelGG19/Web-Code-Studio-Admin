@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.ejemplo.com/api',
+  apiUrl: 'https://impartial-art-production.up.railway.app/api',
   appName: 'Activa - Admin',
 };
