@@ -1,3 +1,6 @@
+// Angular Material prebuilt theme (also listed in angular.json; import here so dev HMR always loads the marker class)
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
 // Material Icons Font
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 

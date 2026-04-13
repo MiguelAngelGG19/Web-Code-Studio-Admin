@@ -50,6 +50,9 @@
     <!-- Documentos -->
     <div class="documentos-section">
       <h3>Documentos Enviados</h3>
+      <p *ngIf="documentos.length === 0" class="tab-hint" style="margin: 0 0 1rem">
+        No hay URLs de documentos en la base de datos para este profesional. Cuando suba archivos, aparecerán aquí.
+      </p>
       <div class="documentos-grid">
         <div *ngFor="let doc of documentos; let i = index" class="documento-item">
           <div class="documento-card">

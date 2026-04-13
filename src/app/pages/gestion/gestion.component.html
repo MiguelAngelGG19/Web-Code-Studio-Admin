@@ -12,7 +12,7 @@
       [class.active]="activeTab() === 'validar'"
       (click)="selectTab('validar')">
       <mat-icon>pending_actions</mat-icon>
-      <span>Por Validar ({{ porValidar.length }})</span>
+      <span>Por Validar ({{ porValidar().length }})</span>
     </button>
     <button 
       class="tab-button"
@@ -33,7 +33,7 @@
       [class.active]="activeTab() === 'rechazados'"
       (click)="selectTab('rechazados')">
       <mat-icon>block</mat-icon>
-      <span>Rechazados ({{ rechazados.length }})</span>
+      <span>Rechazados ({{ rechazados().length }})</span>
     </button>
   </div>
 
@@ -42,6 +42,12 @@
     <!-- Por Validar -->
     <div class="tab-content" *ngIf="activeTab() === 'validar'">
       <h2>Profesionales Por Validar</h2>
+      <p class="tab-hint" *ngIf="pendingLoading()">Cargando solicitudes…</p>
+      <p class="tab-hint" *ngIf="pendingLoadError() as err" style="color: #c62828">{{ err }}</p>
+      <p class="tab-hint">
+        El API solo lista fisioterapeutas en estado <strong>pending_approval</strong> (documentación enviada). Los que siguen en
+        <strong>pending_profile</strong> no aparecen aquí hasta que el flujo los avance.
+      </p>
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -54,7 +60,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of porValidar">
+            <tr *ngFor="let item of porValidar()">
               <td>{{ item.nombre }}</td>
               <td>{{ item.email }}</td>
               <td>{{ item.titulo }}</td>
@@ -74,6 +80,7 @@
     <!-- Suscritos -->
     <div class="tab-content" *ngIf="activeTab() === 'suscritos'">
       <h2>Fisioterapeutas Suscritos (Activos)</h2>
+      <p class="tab-hint">{{ sinApiListados }}</p>
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -123,6 +130,7 @@
     <!-- Rezagados -->
     <div class="tab-content" *ngIf="activeTab() === 'rezagados'">
       <h2>Fisioterapeutas Rezagados (No Renovaron)</h2>
+      <p class="tab-hint">{{ sinApiListados }}</p>
       <p class="tab-hint">
         Los registros con más de 60 días de rezago dejan de mostrarse aquí automáticamente (no se borran).
         Puedes usar <strong>Ocultar</strong> para quitarlos de la vista o <strong>Re-enganchar</strong> para enviar un correo de contacto.
@@ -161,6 +169,7 @@
     <!-- Rechazados -->
     <div class="tab-content" *ngIf="activeTab() === 'rechazados'">
       <h2>Profesionales Rechazados (Historial)</h2>
+      <p class="tab-hint">{{ sinApiListados }}</p>
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -172,7 +181,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of rechazados">
+            <tr *ngFor="let item of rechazados()">
               <td>{{ item.nombre }}</td>
               <td>{{ item.email }}</td>
               <td><span class="badge badge-danger">{{ item.motivo }}</span></td>

@@ -4,6 +4,10 @@
     <div>
       <h1>Suscripciones - Configuración de Planes</h1>
       <p>Administra los planes de suscripción. Solo puedes activar o desactivar; no se eliminan registros.</p>
+      <p class="api-notice">
+        <strong>Nota:</strong> el backend actual no expone rutas REST para <code>subscription_plan</code>. Los datos de esta pantalla son locales al
+        navegador hasta que exista un endpoint en el API.
+      </p>
     </div>
     <button class="btn btn-primary btn-new" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
       <mat-icon>add_circle_outline</mat-icon>

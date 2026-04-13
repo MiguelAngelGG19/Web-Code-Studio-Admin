@@ -1,154 +1,129 @@
-import { Component, computed, signal, inject } from '@angular/core';
+import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ValidationModalComponent } from '../../components/validation-modal/validation-modal.component';
+import { AdminApiService, PendingPhysioRow } from '../../services/admin-api.service';
 
 const DIAS_OCULTAR_REZAGADO = 60;
+
+export type PendienteValidarVm = {
+  id: number;
+  nombre: string;
+  email: string;
+  titulo: string;
+  fechaSolicitud: string;
+  licenseDocUrl?: string | null;
+  ineDocUrl?: string | null;
+};
 
 @Component({
   selector: 'app-gestion',
   standalone: true,
   imports: [CommonModule, MatIconModule, MatDialogModule],
   templateUrl: 'gestion.component.html',
-  styleUrls: ['gestion.component.scss']
+  styleUrls: ['gestion.component.scss'],
 })
-export class GestionComponent {
+export class GestionComponent implements OnInit {
   private dialog = inject(MatDialog);
+  private adminApi = inject(AdminApiService);
+
   activeTab = signal<'validar' | 'suscritos' | 'rezagados' | 'rechazados'>('validar');
 
-  porValidar = [
-    {
-      id: 1,
-      nombre: 'Dr. Juan García',
-      email: 'juan@example.com',
-      titulo: 'Licenciado en Fisioterapia',
-      fechaSolicitud: '2024-04-08'
-    },
-    {
-      id: 2,
-      nombre: 'Dra. María López',
-      email: 'maria@example.com',
-      titulo: 'Especialista en Rehabilitación',
-      fechaSolicitud: '2024-04-09'
-    }
-  ];
+  porValidar = signal<PendienteValidarVm[]>([]);
+  pendingLoadError = signal<string | null>(null);
+  pendingLoading = signal(false);
 
-  suscritos = signal([
-    {
-      id: 1,
-      nombre: 'Dr. Carlos Ruiz',
-      email: 'carlos@example.com',
-      plan: 'Premium',
-      vencimiento: '2024-06-15',
-      pagos: 5,
-      suspendido: false
-    },
-    {
-      id: 2,
-      nombre: 'Dra. Paula Martín',
-      email: 'paula@example.com',
-      plan: 'Standard',
-      vencimiento: '2024-05-20',
-      pagos: 3,
-      suspendido: false
-    }
-  ]);
+  /** El backend no expone listados para estas pestañas; solo UI local. */
+  readonly sinApiListados =
+    'El API actual no incluye listados de suscritos, rezagados ni rechazados; aquí puedes usar datos locales o esperar nuevos endpoints.';
 
-  /** Rezagados: ocultos manualmente o con ≥60 días dejan de listarse (no se borran). */
-  rezagados = signal([
-    {
-      id: 1,
-      nombre: 'Dr. Roberto Silva',
-      email: 'roberto@example.com',
-      planVencido: 'Premium',
-      diasRezago: 55,
-      oculto: false
-    },
-    {
-      id: 2,
-      nombre: 'Lic. Ana Fernández',
-      email: 'ana@example.com',
-      planVencido: 'Standard',
-      diasRezago: 42,
-      oculto: false
-    },
-    {
-      id: 3,
-      nombre: 'Dr. Viejo Caso',
-      email: 'viejo@example.com',
-      planVencido: 'Básico',
-      diasRezago: 72,
-      oculto: false
-    }
-  ]);
+  suscritos = signal<
+    Array<{
+      id: number;
+      nombre: string;
+      email: string;
+      plan: string;
+      vencimiento: string;
+      pagos: number;
+      suspendido: boolean;
+    }>
+  >([]);
+
+  rezagados = signal<
+    Array<{
+      id: number;
+      nombre: string;
+      email: string;
+      planVencido: string;
+      diasRezago: number;
+      oculto: boolean;
+    }>
+  >([]);
 
   rezagadosVisibles = computed(() =>
     this.rezagados().filter((r) => !r.oculto && r.diasRezago < DIAS_OCULTAR_REZAGADO)
   );
 
-  rechazados = [
-    {
-      id: 1,
-      nombre: 'Luis Gómez',
-      email: 'luis@example.com',
-      motivo: 'Documentos inválidos',
-      fechaRechazo: '2024-03-10'
-    },
-    {
-      id: 2,
-      nombre: 'Sandra López',
-      email: 'sandra@example.com',
-      motivo: 'Título no verificable',
-      fechaRechazo: '2024-03-12'
-    }
-  ];
+  rechazados = signal<
+    Array<{
+      id: number;
+      nombre: string;
+      email: string;
+      motivo: string;
+      fechaRechazo: string;
+    }>
+  >([]);
+
+  ngOnInit() {
+    this.reloadPending();
+  }
+
+  reloadPending() {
+    this.pendingLoading.set(true);
+    this.pendingLoadError.set(null);
+    this.adminApi.getPendingPhysiotherapists().subscribe({
+      next: (res) => {
+        this.pendingLoading.set(false);
+        const rows = res.rows ?? [];
+        this.porValidar.set(rows.map((r) => this.mapPendingRow(r)));
+      },
+      error: (err) => {
+        this.pendingLoading.set(false);
+        this.pendingLoadError.set(
+          err?.error?.message ?? 'No se pudo cargar la lista (¿token admin válido?)'
+        );
+        this.porValidar.set([]);
+      },
+    });
+  }
+
+  private mapPendingRow(row: PendingPhysioRow): PendienteValidarVm {
+    const nombre = [row.first_name, row.last_name_paternal, row.last_name_maternal]
+      .filter((x) => x != null && String(x).trim() !== '')
+      .join(' ')
+      .trim();
+    const created = row.created_at ? String(row.created_at).slice(0, 10) : '—';
+    return {
+      id: row.id_physio,
+      nombre: nombre || 'Sin nombre',
+      email: row.email ?? '—',
+      titulo: row.professional_license ? `Cédula: ${row.professional_license}` : 'Fisioterapeuta',
+      fechaSolicitud: created,
+      licenseDocUrl: row.license_doc_url,
+      ineDocUrl: row.ine_doc_url,
+    };
+  }
 
   selectTab(tab: 'validar' | 'suscritos' | 'rezagados' | 'rechazados') {
     this.activeTab.set(tab);
   }
 
-  aprobar(id: number) {
-    const index = this.porValidar.findIndex(s => s.id === id);
-    if (index !== -1) {
-      const aprobado = this.porValidar[index];
-      this.suscritos.update((list) => [
-        ...list,
-        {
-          id: aprobado.id,
-          nombre: aprobado.nombre,
-          email: aprobado.email,
-          plan: 'Premium',
-          vencimiento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          pagos: 1,
-          suspendido: false
-        }
-      ]);
-      this.porValidar.splice(index, 1);
-      alert(`${aprobado.nombre} ha sido aprobado y agregado a suscritos.`);
-    }
-  }
-
-  rechazar(id: number, comentario: string = '') {
-    const index = this.porValidar.findIndex(s => s.id === id);
-    if (index !== -1) {
-      const rechazado = this.porValidar[index];
-      this.rechazados.push({
-        id: rechazado.id,
-        nombre: rechazado.nombre,
-        email: rechazado.email,
-        motivo: comentario || 'Sin especificar',
-        fechaRechazo: new Date().toISOString().split('T')[0]
-      });
-      this.porValidar.splice(index, 1);
-      alert(`${rechazado.nombre} ha sido rechazado. Motivo: ${comentario}`);
-    }
-  }
-
   verPerfil(id: number) {
-    const solicitud = this.porValidar.find(s => s.id === id);
-    if (solicitud) {
-      this.dialog.open(ValidationModalComponent, {
+    const solicitud = this.porValidar().find((s) => s.id === id);
+    if (!solicitud) return;
+    this.dialog
+      .open(ValidationModalComponent, {
         width: '640px',
         maxWidth: 'calc(100vw - 2rem)',
         maxHeight: 'min(90vh, 900px)',
@@ -157,17 +132,29 @@ export class GestionComponent {
         backdropClass: 'validation-modal-backdrop',
         disableClose: false,
         hasBackdrop: true,
-        data: solicitud
-      }).afterClosed().subscribe((result: { accion: string; id: number; comentario?: string } | undefined) => {
-        if (result) {
-          if (result.accion === 'aprobar') {
-            this.aprobar(result.id);
-          } else if (result.accion === 'rechazar') {
-            this.rechazar(result.id, result.comentario ?? '');
-          }
+        data: solicitud,
+      })
+      .afterClosed()
+      .subscribe((result: { accion: string; id: number; comentario?: string } | undefined) => {
+        if (!result) return;
+        if (result.accion === 'aprobar') {
+          this.adminApi.approvePhysiotherapist(result.id, 'approved').subscribe({
+            next: () => {
+              alert('Profesional aprobado.');
+              this.reloadPending();
+            },
+            error: (e) => alert(e?.error?.message ?? 'Error al aprobar'),
+          });
+        } else if (result.accion === 'rechazar') {
+          this.adminApi.approvePhysiotherapist(result.id, 'rejected').subscribe({
+            next: () => {
+              alert('Solicitud rechazada.');
+              this.reloadPending();
+            },
+            error: (e) => alert(e?.error?.message ?? 'Error al rechazar'),
+          });
         }
       });
-    }
   }
 
   enviarNotificacion(id: number) {

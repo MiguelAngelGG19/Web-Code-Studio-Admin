@@ -42,7 +42,8 @@ export class LoginComponent {
         }
       },
       error: (err) => {
-        console.log('Error en login:', err);
+        const msg = err?.error?.message ?? 'No se pudo iniciar sesión. Revisa correo y contraseña.';
+        alert(msg);
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, Inject, signal } from '@angular/core';
+import { Component, Inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,11 +12,8 @@ export interface ValidationData {
   email: string;
   titulo: string;
   fechaSolicitud: string;
-  documentos?: Array<{
-    nombre: string;
-    url: string;
-    tipo: string;
-  }>;
+  licenseDocUrl?: string | null;
+  ineDocUrl?: string | null;
 }
 
 @Component({
@@ -24,23 +21,32 @@ export interface ValidationData {
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatInputModule],
   templateUrl: './validation-modal.component.html',
-  styleUrls: ['./validation-modal.component.scss']
+  styleUrls: ['./validation-modal.component.scss'],
 })
-export class ValidationModalComponent {
+export class ValidationModalComponent implements OnInit {
   comentarioText = '';
   showRejectForm = signal(false);
   previewDoc = signal<{ nombre: string; url: string } | null>(null);
 
-  documentos = [
-    { nombre: 'Cédula Profesional', url: '#', tipo: 'cedula' },
-    { nombre: 'Título Universitario', url: '#', tipo: 'titulo' },
-    { nombre: 'Certificado de Especialidad', url: '#', tipo: 'certificado' }
-  ];
+  documentos: Array<{ nombre: string; url: string; tipo: string }> = [];
 
   constructor(
     public dialogRef: MatDialogRef<ValidationModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ValidationData
   ) {}
+
+  ngOnInit() {
+    const docs: Array<{ nombre: string; url: string; tipo: string }> = [];
+    const lic = this.data.licenseDocUrl?.trim();
+    const ine = this.data.ineDocUrl?.trim();
+    if (lic) {
+      docs.push({ nombre: 'Documento de cédula / licencia', url: lic, tipo: 'cedula' });
+    }
+    if (ine) {
+      docs.push({ nombre: 'Identificación oficial (INE)', url: ine, tipo: 'ine' });
+    }
+    this.documentos = docs;
+  }
 
   aprobar() {
     this.dialogRef.close({ accion: 'aprobar', id: this.data.id });
@@ -63,12 +69,13 @@ export class ValidationModalComponent {
     this.dialogRef.close({
       accion: 'rechazar',
       id: this.data.id,
-      comentario: this.comentarioText
+      comentario: this.comentarioText,
     });
   }
 
   verDocumento(indice: number) {
     const doc = this.documentos[indice];
+    if (!doc) return;
     this.previewDoc.set({ nombre: doc.nombre, url: doc.url });
   }
 

@@ -3,7 +3,12 @@
   <div class="ejercicios-header">
     <div>
       <h1>Repositorio de Ejercicios</h1>
-      <p>Catálogo de ejercicios. Usa el ícono de visibilidad para ocultar o reactivar; no se borran del sistema.</p>
+      <p>
+        Catálogo desde el API (GET/POST <code>/exercises</code>). La visibilidad “ocultar” es solo en esta pantalla hasta que el backend
+        soporte bajas lógicas.
+      </p>
+      <p *ngIf="catalogoLoading()" class="catalogo-status">Cargando ejercicios…</p>
+      <p *ngIf="catalogoError() as err" class="catalogo-status catalogo-status--error">{{ err }}</p>
     </div>
     <button class="btn btn-primary btn-upload" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
       <mat-icon>upload_file</mat-icon>
@@ -121,10 +126,27 @@
       <div class="ejercicios-grid" *ngIf="!showFormulario()">
         <div *ngFor="let ejercicio of ejerciciosFiltrados" class="ejercicio-card">
           <div class="card-image">
-            <div class="image-placeholder" *ngIf="!ejercicio.imagenUrl">
+            <img *ngIf="ejercicio.imagenUrl" [src]="ejercicio.imagenUrl" [alt]="ejercicio.nombre" />
+            <ng-container *ngIf="!ejercicio.imagenUrl && ejercicio.videoUrl">
+              <img
+                *ngIf="isImageMedia(ejercicio.videoUrl)"
+                [src]="absoluteMediaUrl(ejercicio.videoUrl)"
+                [alt]="ejercicio.nombre"
+              />
+              <video
+                *ngIf="isVideoMedia(ejercicio.videoUrl) && !isExternalVideoHost(ejercicio.videoUrl)"
+                [src]="absoluteMediaUrl(ejercicio.videoUrl)"
+                controls
+                muted
+                playsinline
+              ></video>
+              <div class="card-media-link" *ngIf="isExternalVideoHost(ejercicio.videoUrl)">
+                <a [href]="absoluteMediaUrl(ejercicio.videoUrl)" target="_blank" rel="noopener noreferrer">Ver en YouTube</a>
+              </div>
+            </ng-container>
+            <div class="image-placeholder" *ngIf="!ejercicio.videoUrl && !ejercicio.imagenUrl">
               <mat-icon>fitness_center</mat-icon>
             </div>
-            <img *ngIf="ejercicio.imagenUrl" [src]="ejercicio.imagenUrl" [alt]="ejercicio.nombre" />
           </div>
 
           <div class="card-content">
@@ -199,7 +221,7 @@
                 <input
                   id="nombre"
                   type="text"
-                  [(ngModel)]="formulario().nombre"
+                  [(ngModel)]="formDraft.nombre"
                   name="nombre"
                   class="form-input"
                   placeholder="Ej: Estiramiento de Espalda"
@@ -211,7 +233,7 @@
                 <label for="descripcion">Descripción *</label>
                 <textarea
                   id="descripcion"
-                  [(ngModel)]="formulario().descripcion"
+                  [(ngModel)]="formDraft.descripcion"
                   name="descripcion"
                   class="form-textarea"
                   placeholder="Describe el ejercicio y sus beneficios"
@@ -225,7 +247,7 @@
                   <label for="tipo">Tipo de Ejercicio *</label>
                   <select
                     id="tipo"
-                    [(ngModel)]="formulario().tipo"
+                    [(ngModel)]="formDraft.tipo"
                     name="tipo"
                     class="form-select"
                     required
@@ -238,7 +260,7 @@
                   <label for="dificultad">Dificultad *</label>
                   <select
                     id="dificultad"
-                    [(ngModel)]="formulario().dificultad"
+                    [(ngModel)]="formDraft.dificultad"
                     name="dificultad"
                     class="form-select"
                     required
@@ -254,7 +276,7 @@
                   <input
                     id="duracion"
                     type="number"
-                    [(ngModel)]="formulario().duracion"
+                    [(ngModel)]="formDraft.duracion"
                     name="duracion"
                     class="form-input"
                     min="1"
@@ -264,28 +286,43 @@
               </div>
             </div>
 
-            <!-- URLs -->
+            <!-- Multimedia: archivo o URL opcional -->
             <div class="form-section">
               <h4>Multimedia</h4>
+              <p class="form-hint" *ngIf="nuevoEditando()">
+                Sube un <strong>video</strong>, <strong>GIF</strong> o <strong>imagen</strong> (obligatorio para registrar en el servidor). Máx. ~50&nbsp;MB. No se guardan enlaces externos.
+              </p>
 
-              <div class="form-group">
-                <label for="videoUrl">URL del Video</label>
+              <div class="form-group" *ngIf="nuevoEditando()">
+                <label for="archivoMedia">Archivo (video / GIF / imagen)</label>
                 <input
-                  id="videoUrl"
-                  type="url"
-                  [(ngModel)]="formulario().videoUrl"
-                  name="videoUrl"
+                  #inputArchivoMedia
+                  id="archivoMedia"
+                  type="file"
                   class="form-input"
-                  placeholder="https://ejemplo.com/video.mp4"
+                  accept="video/*,image/*,.gif"
+                  (change)="onArchivoMediaChange($event)"
                 />
+                <button
+                  type="button"
+                  class="btn btn-outline btn-small"
+                  *ngIf="archivoMedia()"
+                  (click)="quitarArchivoMedia(inputArchivoMedia)"
+                >
+                  Quitar archivo
+                </button>
+                <div class="media-preview" *ngIf="archivoPreviewUrl() as prev">
+                  <img *ngIf="archivoMedia()?.type?.startsWith('image/')" [src]="prev" alt="Vista previa" />
+                  <video *ngIf="archivoMedia()?.type?.startsWith('video/')" [src]="prev" controls muted playsinline></video>
+                </div>
               </div>
 
-              <div class="form-group">
+              <div class="form-group" *ngIf="!nuevoEditando()">
                 <label for="imagenUrl">URL de la Imagen</label>
                 <input
                   id="imagenUrl"
                   type="url"
-                  [(ngModel)]="formulario().imagenUrl"
+                  [(ngModel)]="formDraft.imagenUrl"
                   name="imagenUrl"
                   class="form-input"
                   placeholder="https://ejemplo.com/imagen.jpg"
@@ -301,7 +338,7 @@
                 <label for="instrucciones">Instrucciones Técnicas</label>
                 <textarea
                   id="instrucciones"
-                  [(ngModel)]="formulario().instrucciones"
+                  [(ngModel)]="formDraft.instrucciones"
                   name="instrucciones"
                   class="form-textarea"
                   placeholder="1. Paso 1&#10;2. Paso 2&#10;3. Paso 3"
@@ -315,7 +352,7 @@
                 <input
                   id="etiquetas"
                   type="text"
-                  [(ngModel)]="formulario().etiquetas"
+                  [(ngModel)]="formDraft.etiquetas"
                   name="etiquetas"
                   class="form-input"
                   placeholder="Ej: principiante, relajación, espalda"
@@ -334,7 +371,7 @@
                 <label *ngFor="let zona of zonasDisponibles" class="checkbox-item">
                   <input
                     type="checkbox"
-                    [checked]="formulario().zonasCuerpo.includes(zona)"
+                    [checked]="formDraft.zonasCuerpo.includes(zona)"
                     (change)="toggleZonaCuerpo(zona)"
                     class="checkbox-input"
                   />
@@ -350,7 +387,7 @@
                 <label *ngFor="let equipo of equiposDisponibles" class="checkbox-item">
                   <input
                     type="checkbox"
-                    [checked]="formulario().equipoNecesario.includes(equipo)"
+                    [checked]="formDraft.equipoNecesario.includes(equipo)"
                     (change)="toggleEquipoNecesario(equipo)"
                     class="checkbox-input"
                   />
