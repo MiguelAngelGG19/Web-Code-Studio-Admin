@@ -1,198 +1,204 @@
 <div class="dashboard-wrapper">
   <div class="dashboard-container">
-    <!-- Header con título y notificaciones -->
-    <div class="dashboard-header">
-      <div class="header-content">
-        <h1>Panel de Administración</h1>
-        <p>Bienvenido, Administrador</p>
-      </div>
-      <div class="header-actions">
-        <div class="notification-bell">
-          <span class="bell-icon">🔔</span>
-          <span class="notification-badge" *ngIf="notificacionesNoLeidas > 0">
-            {{ notificacionesNoLeidas }}
-          </span>
-        </div>
-      </div>
+
+    <!-- Cargando -->
+    <div *ngIf="cargando" class="loading-state">
+      <p>⏳ Cargando datos...</p>
     </div>
 
-    <!-- Tarjetas de estadísticas principales -->
-    <div class="stats-grid">
-      <div class="stat-card stat-primary">
-        <div class="stat-icon">👥</div>
-        <div class="stat-content">
-          <h3>Fisios Suscritos</h3>
-          <p class="stat-number">{{ fisiosSuscritos }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-warning">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-content">
-          <h3>Por Validar</h3>
-          <p class="stat-number">{{ fisiosValidar }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-success">
-        <div class="stat-icon">➕</div>
-        <div class="stat-content">
-          <h3>Suscripciones Nuevas</h3>
-          <p class="stat-number">{{ suscripcionesNuevas }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-danger">
-        <div class="stat-icon">💳</div>
-        <div class="stat-content">
-          <h3>Pagos Pendientes</h3>
-          <p class="stat-number">{{ pagosPendientes }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-danger">
-        <div class="stat-icon">❌</div>
-        <div class="stat-content">
-          <h3>Anulados por Pagos</h3>
-          <p class="stat-number">{{ anuladosPorPagos }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card stat-info">
-        <div class="stat-icon">🚫</div>
-        <div class="stat-content">
-          <h3>Rechazados</h3>
-          <p class="stat-number">{{ fisiosRechazados }}</p>
-        </div>
-      </div>
+    <!-- Error -->
+    <div *ngIf="error" class="error-state">
+      <p>❌ {{ error }}</p>
+      <button class="btn-small btn-warning" (click)="cargarOverview()">Reintentar</button>
     </div>
 
-    <!-- Gráficas y Paneles -->
-    <div class="dashboard-content">
-      <div class="content-row">
-        <!-- Gráfica de Fisios Suscritos -->
-        <div class="chart-card">
-          <div class="card-header">
-            <h2>Fisios Suscritos este Mes</h2>
-          </div>
-          <div class="chart-placeholder">
-            <div class="chart-bars">
-              <div class="chart-bar" style="height: 70%;">
-                <span class="bar-label">Sem 1: 45</span>
-              </div>
-              <div class="chart-bar" style="height: 85%;">
-                <span class="bar-label">Sem 2: 62</span>
-              </div>
-              <div class="chart-bar" style="height: 60%;">
-                <span class="bar-label">Sem 3: 38</span>
-              </div>
-              <div class="chart-bar" style="height: 90%;">
-                <span class="bar-label">Sem 4: 100</span>
-              </div>
-            </div>
+    <!-- Contenido principal -->
+    <ng-container *ngIf="!cargando && !error">
+
+      <!-- Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <h1>Panel de Administración</h1>
+          <p>Bienvenido, Administrador</p>
+        </div>
+      </div>
+
+      <!-- Tarjetas de estadísticas principales -->
+      <div class="stats-grid">
+        <div class="stat-card stat-primary">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <h3>Fisios Aprobados</h3>
+            <p class="stat-number">{{ fisiosSuscritos }}</p>
           </div>
         </div>
 
-        <!-- Panel de Fisios a Validar -->
-        <div class="panel-card">
-          <div class="card-header">
-            <h2>Fisios Pendientes<span class="badge">{{ fisiosValidar }}</span></h2>
+        <div class="stat-card stat-warning">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-content">
+            <h3>Por Validar</h3>
+            <p class="stat-number">{{ fisiosValidar }}</p>
           </div>
-          <div class="panel-list">
-            <div *ngFor="let fisio of panelesFisiosValidar" class="list-item">
-              <div class="item-info">
-                <h4>{{ fisio.nombre }}</h4>
-                <p>{{ fisio.especialidad }}</p>
-                <span class="date">Solicitud: {{ fisio.fecha }}</span>
-              </div>
-              <div class="item-actions">
-                <button class="btn-small btn-success">Validar</button>
-                <button class="btn-small btn-danger">Rechazar</button>
-              </div>
-            </div>
+        </div>
+
+        <div class="stat-card stat-success">
+          <div class="stat-icon">🏥</div>
+          <div class="stat-content">
+            <h3>Pacientes Registrados</h3>
+            <p class="stat-number">{{ totalPacientes }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-info">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <h3>Total Citas</h3>
+            <p class="stat-number">{{ totalCitas }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-success">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <h3>Ganancias (MXN)</h3>
+            <p class="stat-number">${{ gananciasTotal | number:'1.2-2' }}</p>
+          </div>
+        </div>
+
+        <div class="stat-card stat-danger">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-content">
+            <h3>Rechazados</h3>
+            <p class="stat-number">{{ fisiosRechazados }}</p>
           </div>
         </div>
       </div>
 
-      <div class="content-row">
-        <!-- Panel de Suscripciones Nuevas -->
-        <div class="panel-card">
-          <div class="card-header">
-            <h2>Suscripciones Nuevas<span class="badge">{{ suscripcionesNuevas }}</span></h2>
-          </div>
-          <div class="panel-list">
-            <div *ngFor="let sub of panelesSuscripciones" class="list-item">
-              <div class="item-info">
-                <h4>{{ sub.nombre }}</h4>
-                <p>Plan: {{ sub.plan }}</p>
-                <span class="date">{{ sub.fecha }}</span>
+      <!-- Paneles de detalle -->
+      <div class="dashboard-content">
+        <div class="content-row">
+
+          <!-- Citas por estado -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>Citas por Estado <span class="badge">{{ totalCitas }}</span></h2>
+            </div>
+            <div class="panel-list">
+              <div *ngFor="let item of overview?.appointments?.by_status | keyvalue" class="list-item">
+                <div class="item-info">
+                  <h4>{{ item.key }}</h4>
+                  <p>{{ item.value }} citas</p>
+                </div>
               </div>
-              <div class="item-actions">
-                <button class="btn-small btn-info">Ver Detalles</button>
+              <div *ngIf="!overview?.appointments?.by_status || (overview?.appointments?.by_status | keyvalue)?.length === 0" class="list-item">
+                <p>Sin datos de citas aún.</p>
               </div>
             </div>
           </div>
+
+          <!-- Resumen de fisioterapeutas -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>Fisioterapeutas <span class="badge">{{ overview?.physiotherapists?.total }}</span></h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>✅ Aprobados</h4>
+                  <p>{{ overview?.physiotherapists?.approved }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>⏳ Pendientes de validar</h4>
+                  <p>{{ overview?.physiotherapists?.pending_approval }}</p>
+                </div>
+                <div class="item-actions">
+                  <a routerLink="/fisioterapeuta" class="btn-small btn-warning">Ver lista</a>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>📝 Perfil incompleto</h4>
+                  <p>{{ overview?.physiotherapists?.pending_profile }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>❌ Rechazados</h4>
+                  <p>{{ overview?.physiotherapists?.rejected }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Panel de Pagos Pendientes -->
-        <div class="panel-card">
-          <div class="card-header">
-            <h2>Pagos Pendientes<span class="badge">{{ pagosPendientes }}</span></h2>
-          </div>
-          <div class="panel-list">
-            <div *ngFor="let pago of panelesPagosPendientes" class="list-item">
-              <div class="item-info">
-                <h4>{{ pago.nombre }}</h4>
-                <p class="amount">{{ pago.monto }}</p>
-                <span class="date">Vencimiento: {{ pago.vencimiento }}</span>
+        <div class="content-row">
+
+          <!-- Ganancias detalle -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>💰 Ganancias</h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Total acumulado</h4>
+                  <p class="amount">${{ gananciasTotal | number:'1.2-2' }} MXN</p>
+                </div>
               </div>
-              <div class="item-actions">
-                <button class="btn-small btn-warning">Cobrar</button>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Citas completadas</h4>
+                  <p>{{ citasCompletadas }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Tarifa por cita</h4>
+                  <p>${{ overview?.ganancias?.tarifa_por_cita | number:'1.2-2' }} MXN</p>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Cuentas de usuarios -->
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>👤 Cuentas de Usuarios</h2>
+            </div>
+            <div class="panel-list">
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Pacientes</h4>
+                  <p>{{ overview?.users?.patient_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Fisioterapeutas</h4>
+                  <p>{{ overview?.users?.physio_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Administradores</h4>
+                  <p>{{ overview?.users?.admin_accounts }}</p>
+                </div>
+              </div>
+              <div class="list-item">
+                <div class="item-info">
+                  <h4>Pacientes vinculados</h4>
+                  <p>{{ overview?.patients_linked }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <div class="content-row">
-        <!-- Panel de Fisios Anulados por Pagos -->
-        <div class="panel-card">
-          <div class="card-header">
-            <h2>Fisios Anulados<span class="badge">{{ anuladosPorPagos }}</span></h2>
-          </div>
-          <div class="panel-list">
-            <div *ngFor="let anulado of panelesFisiosAnulados" class="list-item">
-              <div class="item-info">
-                <h4>{{ anulado.nombre }}</h4>
-                <p>{{ anulado.motivo }}</p>
-                <span class="date">{{ anulado.fecha }}</span>
-              </div>
-              <div class="item-actions">
-                <button class="btn-small btn-secondary">Reactivar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Panel de Fisios Rechazados -->
-        <div class="panel-card">
-          <div class="card-header">
-            <h2>Fisios Rechazados<span class="badge">{{ fisiosRechazados }}</span></h2>
-          </div>
-          <div class="panel-list">
-            <div *ngFor="let rechazado of panelesFisiosRechazados" class="list-item">
-              <div class="item-info">
-                <h4>{{ rechazado.nombre }}</h4>
-                <p>{{ rechazado.motivo }}</p>
-                <span class="date">{{ rechazado.fecha }}</span>
-              </div>
-              <div class="item-actions">
-                <button class="btn-small btn-secondary">Revisión</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </ng-container>
   </div>
 </div>
