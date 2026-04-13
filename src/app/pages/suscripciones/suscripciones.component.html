@@ -3,7 +3,7 @@
   <div class="suscripciones-header">
     <div>
       <h1>Suscripciones - Configuración de Planes</h1>
-      <p>Administra los planes de suscripción disponibles para los fisioterapeutas</p>
+      <p>Administra los planes de suscripción. Solo puedes activar o desactivar; no se eliminan registros.</p>
     </div>
     <button class="btn btn-primary btn-new" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
       <mat-icon>add_circle_outline</mat-icon>
@@ -42,12 +42,9 @@
                 <button class="btn btn-icon" (click)="editarPlan(plan.id)" title="Editar">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button class="btn btn-icon btn-toggle" (click)="toggleActivoPlan(plan.id)" 
-                  [title]="plan.activo ? 'Desactivar' : 'Activar'">
+                <button class="btn btn-icon btn-toggle" (click)="toggleActivoPlan(plan.id)"
+                  [title]="plan.activo ? 'Desactivar plan' : 'Activar plan'">
                   <mat-icon>{{ plan.activo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
-                </button>
-                <button class="btn btn-icon btn-delete" (click)="eliminarPlan(plan.id)" title="Eliminar">
-                  <mat-icon>delete</mat-icon>
                 </button>
               </td>
             </tr>

@@ -287,13 +287,13 @@ export class EjerciciosComponent {
       return e;
     });
     this.ejercicios.set(ejerciciosActualizados);
-  }
-
-  eliminarEjercicio(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este ejercicio? Esta acción no se puede deshacer.')) {
-      const ejerciciosActualizados = this.ejercicios().filter(e => e.id !== id);
-      this.ejercicios.set(ejerciciosActualizados);
-      alert('Ejercicio eliminado exitosamente.');
+    const e = ejerciciosActualizados.find((x) => x.id === id);
+    if (e) {
+      alert(
+        e.activo
+          ? 'Ejercicio visible en el catálogo.'
+          : 'Ejercicio oculto (dado de baja). Los datos se conservan; no se elimina.'
+      );
     }
   }
 

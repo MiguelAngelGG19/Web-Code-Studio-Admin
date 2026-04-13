@@ -1,4 +1,24 @@
 <div class="validation-modal">
+  @if (previewDoc(); as doc) {
+    <div class="doc-preview-overlay" (click)="cerrarPreview()" role="dialog" aria-modal="true">
+      <div class="doc-preview-dialog" (click)="$event.stopPropagation()">
+        <div class="doc-preview-header">
+          <h3>{{ doc.nombre }}</h3>
+          <button type="button" class="close-btn" (click)="cerrarPreview()" aria-label="Cerrar">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="doc-preview-body">
+          <p>Vista del documento (simulada). En producción se mostrará el PDF o enlace seguro.</p>
+          <p class="doc-url-hint" *ngIf="doc.url && doc.url !== '#'">{{ doc.url }}</p>
+        </div>
+        <div class="doc-preview-footer">
+          <button type="button" class="btn-cerrar-doc" (click)="cerrarPreview()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+
   <div class="modal-header">
     <h2>Validar Solicitud de {{ data.nombre }}</h2>
     <button (click)="dialogRef.close()" class="close-btn">
@@ -63,8 +83,8 @@
       <label for="comentario">¿Por qué rechazas esta solicitud?</label>
       <textarea
         id="comentario"
-        [(ngModel)]="comentario"
-        placeholder="Escribe el motivo del rechazo..."
+        [(ngModel)]="comentarioText"
+        placeholder="Escribe el motivo..."
         class="comentario-input"
       ></textarea>
       <div class="form-buttons">
@@ -74,7 +94,7 @@
         </button>
         <button class="btn btn-confirm-reject" (click)="confirmarRechazo()">
           <mat-icon>check</mat-icon>
-          Confirmar Rechazo
+          Confirmar dar de baja
         </button>
       </div>
     </div>

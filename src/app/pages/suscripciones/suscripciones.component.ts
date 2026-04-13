@@ -171,13 +171,9 @@ export class SuscripcionesComponent {
       return p;
     });
     this.planes.set(planesActualizados);
-  }
-
-  eliminarPlan(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este plan?')) {
-      const planesActualizados = this.planes().filter(p => p.id !== id);
-      this.planes.set(planesActualizados);
-      alert('Plan eliminado exitosamente.');
+    const p = planesActualizados.find((x) => x.id === id);
+    if (p) {
+      alert(p.activo ? 'Plan activado. Visible para nuevas suscripciones.' : 'Plan desactivado. No se elimina; solo deja de ofrecerse.');
     }
   }
 

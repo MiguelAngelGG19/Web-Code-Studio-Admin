@@ -130,3 +130,55 @@ app-root {
     font-size: 14px;
   }
 }
+
+.cdk-overlay-backdrop.validation-modal-backdrop {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+/* Diálogo de validación (gestión → por validar): centrado real en viewport */
+.cdk-global-overlay-wrapper:has(.validation-modal-panel) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+}
+
+.cdk-global-overlay-wrapper:has(.validation-modal-panel) .cdk-overlay-pane.validation-modal-panel {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  max-width: min(640px, calc(100vw - 2rem)) !important;
+  width: min(640px, calc(100vw - 2rem)) !important;
+  max-height: min(90vh, 900px) !important;
+  pointer-events: auto !important;
+}
+
+.cdk-global-overlay-wrapper:has(.validation-modal-panel)
+  .cdk-overlay-pane.validation-modal-panel
+  .mat-mdc-dialog-container,
+.cdk-global-overlay-wrapper:has(.validation-modal-panel)
+  .cdk-overlay-pane.validation-modal-panel
+  .mat-dialog-container {
+  margin: 0 !important;
+  max-height: min(90vh, 900px) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.25) !important;
+}
+
+/* Si el navegador no soporta :has(), fallback aproximado al centro */
+@supports not selector(:has(*)) {
+  .cdk-overlay-pane.validation-modal-panel {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    max-width: min(640px, calc(100vw - 2rem)) !important;
+    width: min(640px, calc(100vw - 2rem)) !important;
+  }
+}

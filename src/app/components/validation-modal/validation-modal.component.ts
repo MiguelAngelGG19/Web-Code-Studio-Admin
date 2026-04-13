@@ -27,10 +27,10 @@ export interface ValidationData {
   styleUrls: ['./validation-modal.component.scss']
 })
 export class ValidationModalComponent {
-  comentario = signal('');
+  comentarioText = '';
   showRejectForm = signal(false);
+  previewDoc = signal<{ nombre: string; url: string } | null>(null);
 
-  // Documentos de ejemplo (en producción vendrían del backend)
   documentos = [
     { nombre: 'Cédula Profesional', url: '#', tipo: 'cedula' },
     { nombre: 'Título Universitario', url: '#', tipo: 'titulo' },
@@ -52,23 +52,27 @@ export class ValidationModalComponent {
 
   cancelarRechazo() {
     this.showRejectForm.set(false);
-    this.comentario.set('');
+    this.comentarioText = '';
   }
 
   confirmarRechazo() {
-    if (this.comentario().trim() === '') {
+    if (this.comentarioText.trim() === '') {
       alert('Por favor, ingresa un comentario.');
       return;
     }
     this.dialogRef.close({
       accion: 'rechazar',
       id: this.data.id,
-      comentario: this.comentario()
+      comentario: this.comentarioText
     });
   }
 
   verDocumento(indice: number) {
-    console.log('Ver documento:', this.documentos[indice]);
-    // Aquí implementarías la lógica para ver el documento
+    const doc = this.documentos[indice];
+    this.previewDoc.set({ nombre: doc.nombre, url: doc.url });
+  }
+
+  cerrarPreview() {
+    this.previewDoc.set(null);
   }
 }

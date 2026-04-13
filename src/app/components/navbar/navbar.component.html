@@ -17,11 +17,6 @@
     <!-- Acciones administrativas (cuando está logueado) -->
     <div class="navbar-actions" *ngIf="isLoggedIn">
       <div class="admin-menu">
-        <div class="notifications">
-          <span class="notification-icon">🔔</span>
-          <span class="notification-count">7</span>
-        </div>
-        
         <div class="user-menu" (click)="goToPerfil()">
           <div class="user-avatar">👤</div>
           <span class="user-name">Admin</span>

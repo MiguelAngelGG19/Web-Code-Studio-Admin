@@ -84,6 +84,16 @@
   color: #0E2940;
 }
 
+.tab-hint {
+  margin: -8px 0 16px 0;
+  padding: 12px 14px;
+  background: #f0fdfa;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+
 .table-container {
   overflow-x: auto;
 }
@@ -231,6 +241,26 @@
     background: rgba(255, 107, 107, 0.1);
     color: #E74C3C;
   }
+
+  &.badge-inactive {
+    background: rgba(100, 116, 139, 0.15);
+    color: #475569;
+  }
+}
+
+.btn-warning {
+  background: rgba(243, 156, 18, 0.15);
+  color: #c27a00;
+}
+
+.btn-outline {
+  background: #fff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+
+  &:hover {
+    background: #f8fafc;
+  }
 }
 
 @media (max-width: 768px) {
@@ -262,21 +292,6 @@
 
   .btn {
     width: 100%;
-  }
-}
-
-// Estilos para el modal de validación
-::ng-deep .validation-modal-panel {
-  .mat-mdc-dialog-container {
-    padding: 0 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  .cdk-overlay-pane {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
   }
 }
 

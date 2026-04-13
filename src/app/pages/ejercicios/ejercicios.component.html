@@ -3,7 +3,7 @@
   <div class="ejercicios-header">
     <div>
       <h1>Repositorio de Ejercicios</h1>
-      <p>Catálogo de ejercicios disponibles para los pacientes - Gestiónado por fisioterapeutas</p>
+      <p>Catálogo de ejercicios. Usa el ícono de visibilidad para ocultar o reactivar; no se borran del sistema.</p>
     </div>
     <button class="btn btn-primary btn-upload" (click)="abrirFormularioNuevo()" *ngIf="!showFormulario()">
       <mat-icon>upload_file</mat-icon>
@@ -168,11 +168,8 @@
               </button>
               <button class="btn btn-icon btn-toggle"
                 (click)="toggleOcultar(ejercicio.id)"
-                [title]="ejercicio.activo ? 'Ocultar' : 'Mostrar'">
-                <mat-icon>{{ ejercicio.activo ? 'visibility' : 'visibility_off' }}</mat-icon>
-              </button>
-              <button class="btn btn-icon btn-delete" (click)="eliminarEjercicio(ejercicio.id)" title="Eliminar">
-                <mat-icon>delete</mat-icon>
+                [title]="ejercicio.activo ? 'Ocultar / dar de baja del catálogo' : 'Reactivar en catálogo'">
+                <mat-icon>{{ ejercicio.activo ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
           </div>

@@ -19,14 +19,14 @@
       [class.active]="activeTab() === 'suscritos'"
       (click)="selectTab('suscritos')">
       <mat-icon>check_circle</mat-icon>
-      <span>Suscritos ({{ suscritos.length }})</span>
+      <span>Suscritos ({{ suscritos().length }})</span>
     </button>
     <button 
       class="tab-button"
       [class.active]="activeTab() === 'rezagados'"
       (click)="selectTab('rezagados')">
       <mat-icon>warning</mat-icon>
-      <span>Rezagados ({{ rezagados.length }})</span>
+      <span>Rezagados ({{ rezagadosVisibles().length }})</span>
     </button>
     <button 
       class="tab-button"
@@ -86,20 +86,32 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of suscritos">
-              <td>{{ item.nombre }}</td>
+            <tr *ngFor="let item of suscritos()">
+              <td>
+                {{ item.nombre }}
+                <span *ngIf="item.suspendido" class="badge badge-inactive" style="margin-left:8px">Dado de baja</span>
+              </td>
               <td><span class="badge badge-success">{{ item.plan }}</span></td>
               <td>{{ item.vencimiento }}</td>
               <td>{{ item.pagos }}</td>
               <td class="actions">
-                <button class="btn btn-small" (click)="enviarNotificacion(item.id)">
+                <button type="button" class="btn btn-small" (click)="enviarNotificacion(item.id)" title="Enviar recordatorio">
                   <mat-icon>notifications</mat-icon>
+                  Avisar
                 </button>
-                <button class="btn btn-small" (click)="verHistorialPagos(item.id)">
+                <button type="button" class="btn btn-small" (click)="verHistorialPagos(item.id)" title="Historial de pagos">
                   <mat-icon>receipt</mat-icon>
+                  Pagos
                 </button>
-                <button class="btn btn-small btn-danger" (click)="suspenderCuenta(item.id)">
-                  <mat-icon>pause_circle</mat-icon>
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  [class.btn-warning]="!item.suspendido"
+                  [class.btn-success]="item.suspendido"
+                  (click)="suspenderCuenta(item.id)"
+                  [title]="item.suspendido ? 'Reactivar cuenta' : 'Dar de baja (ocultar)'">
+                  <mat-icon>{{ item.suspendido ? 'play_circle' : 'pause_circle' }}</mat-icon>
+                  {{ item.suspendido ? 'Reactivar' : 'Dar de baja' }}
                 </button>
               </td>
             </tr>
@@ -111,6 +123,10 @@
     <!-- Rezagados -->
     <div class="tab-content" *ngIf="activeTab() === 'rezagados'">
       <h2>Fisioterapeutas Rezagados (No Renovaron)</h2>
+      <p class="tab-hint">
+        Los registros con más de 60 días de rezago dejan de mostrarse aquí automáticamente (no se borran).
+        Puedes usar <strong>Ocultar</strong> para quitarlos de la vista o <strong>Re-enganchar</strong> para enviar un correo de contacto.
+      </p>
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -122,18 +138,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of rezagados">
+            <tr *ngFor="let item of rezagadosVisibles()">
               <td>{{ item.nombre }}</td>
               <td>{{ item.planVencido }}</td>
               <td><span class="badge badge-warning">{{ item.diasRezago }}d</span></td>
               <td class="actions">
-                <button class="btn btn-success" (click)="reenganchar(item.id)">
-                  <mat-icon>autorenew</mat-icon>
+                <button type="button" class="btn btn-success" (click)="reenganchar(item.id)">
+                  <mat-icon>mail</mat-icon>
                   Re-enganchar
                 </button>
-                <button class="btn btn-danger" (click)="eliminarPermanentemente(item.id)">
-                  <mat-icon>delete</mat-icon>
-                  Eliminar
+                <button type="button" class="btn btn-outline" (click)="ocultarRezagado(item.id)">
+                  <mat-icon>visibility_off</mat-icon>
+                  Ocultar
                 </button>
               </td>
             </tr>
